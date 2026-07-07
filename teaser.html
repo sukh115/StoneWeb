@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>돌과 시간 — Stone &amp; Time</title>
+<style>
+  :root { --p: 0; --accent: #6ee7a0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: #0b0b0d; color: #e8e6e1; font-family: 'Pretendard', 'Noto Sans KR', sans-serif; overflow-x: hidden; }
+  section { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 14vh 24px; text-align: center; position: relative; }
+  .label { font-size: 12px; letter-spacing: .32em; color: var(--accent); margin-bottom: 18px; }
+  h2 { font-size: clamp(28px, 5vw, 46px); margin-bottom: 26px; font-weight: 800; letter-spacing: -.02em; }
+  p.lead { max-width: 640px; font-size: clamp(16px, 2vw, 19px); line-height: 2; color: #bab7b0; }
+  em { font-style: normal; color: #f2f0eb; font-weight: 700; }
+  .bar { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, #7c7a75, var(--accent)); width: calc(var(--p) * 100%); z-index: 9; }
+  .reveal { opacity: 0; transform: translateY(26px); transition: opacity .9s ease, transform .9s ease; }
+  .reveal.on { opacity: 1; transform: none; }
+
+  /* HERO */
+  #hero { min-height: 108vh; justify-content: flex-end; padding-bottom: 10vh;
+    background: linear-gradient(180deg, rgba(11,11,13,.55), rgba(11,11,13,.25) 45%, rgba(11,11,13,.94) 88%, #0b0b0d), url('assets/bg_forest.jpg') center 30%/cover no-repeat; }
+  #hero .eyebrow { font-size: 12.5px; letter-spacing: .35em; color: #b5b2ab; text-transform: uppercase; margin-bottom: 18px; text-shadow: 0 1px 8px #000; }
+  #hero h1 { font-size: clamp(52px, 11vw, 120px); line-height: 1.02; font-weight: 800; letter-spacing: -.02em; text-shadow: 0 4px 28px rgba(0,0,0,.8); }
+  #hero .en { font-size: clamp(13px, 1.8vw, 19px); letter-spacing: .55em; color: var(--accent); margin-top: 16px; }
+  #hero .quote { font-size: 15px; color: #a5a29b; margin-top: 30px; line-height: 1.9; text-shadow: 0 1px 6px #000; }
+  #hero img.golem { width: min(300px, 52vw); mix-blend-mode: screen; margin-bottom: -10px; animation: bob 4.5s ease-in-out infinite; filter: drop-shadow(0 0 40px rgba(110,231,160,.12)); }
+  @keyframes bob { 0%,100% { transform: translateY(0);} 50% { transform: translateY(-10px);} }
+
+  /* WORLD */
+  #world-s .art { width: min(760px, 92vw); border-radius: 16px; margin-top: 44px; border: 1px solid #26262c; box-shadow: 0 30px 80px rgba(0,0,0,.55); }
+  .caption { margin-top: 14px; font-size: 12.5px; letter-spacing: .12em; color: #6d6a64; }
+
+  /* GAMEPLAY */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 18px; max-width: 960px; margin-top: 42px; width: 100%; }
+  .card { background: #141417; border: 1px solid #232329; border-radius: 16px; padding: 30px 26px; text-align: left; }
+  .card h3 { font-size: 19px; margin-bottom: 12px; }
+  .card .k { color: var(--accent); font-size: 12px; letter-spacing: .22em; display: block; margin-bottom: 10px; }
+  .card p { font-size: 14.5px; line-height: 1.85; color: #a8a5a0; }
+  #play img.poses { width: min(560px, 88vw); margin-top: 52px; mix-blend-mode: screen; }
+
+  /* JOURNEY */
+  #journey { background: linear-gradient(180deg, #0b0b0d, rgba(11,11,13,.72)), url('assets/bg_forest.jpg') center 70%/cover fixed no-repeat; }
+  .trail { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-width: 740px; margin-top: 36px; }
+  .trail span { padding: 9px 17px; border: 1px solid rgba(255,255,255,.16); border-radius: 999px; font-size: 13.5px; color: #cfccc5; background: rgba(11,11,13,.55); backdrop-filter: blur(4px); }
+  .trail span.deep { border-color: var(--accent); color: #d9f8e6; }
+  .hint { margin-top: 26px; font-size: 13.5px; color: #8d8a83; text-shadow: 0 1px 6px #000; }
+
+  /* FINALE — 색의 귀환 */
+  #finale { min-height: 130vh; justify-content: flex-end; padding-bottom: 14vh;
+    background: linear-gradient(180deg, #0b0b0d 0%, rgba(11,11,13,.35) 30%, rgba(11,11,13,.15) 55%, rgba(11,11,13,.9) 92%), url('assets/bloom.jpg') center 38%/cover no-repeat; }
+  #finale .veil { position: absolute; inset: 0; backdrop-filter: grayscale(calc(1 - var(--f))) brightness(calc(.55 + var(--f) * .45)); -webkit-backdrop-filter: grayscale(calc(1 - var(--f))) brightness(calc(.55 + var(--f)*.45)); pointer-events: none; }
+  :root { --f: 0; }
+  #finale h2 { font-size: clamp(32px, 6vw, 56px); line-height: 1.35; text-shadow: 0 4px 24px rgba(0,0,0,.75); position: relative; }
+  #finale p.lead { color: #efece6; text-shadow: 0 2px 12px rgba(0,0,0,.8); position: relative; }
+  .cta { margin-top: 38px; display: inline-block; padding: 15px 40px; border-radius: 999px; background: var(--accent); color: #0b0b0d; font-weight: 800; font-size: 16px; text-decoration: none; position: relative; box-shadow: 0 10px 40px rgba(110,231,160,.35); }
+  footer { padding: 44px; text-align: center; font-size: 13px; color: #5c5a55; }
+</style>
+</head>
+<body>
+<div class="bar"></div>
+
+<section id="hero">
+  <img class="golem" src="assets/golem_hero.jpg" alt="조약돌 골렘">
+  <div class="eyebrow">2D Metroidvania · Demo in development</div>
+  <h1>돌과 시간</h1>
+  <div class="en">STONE &amp; TIME</div>
+  <p class="quote">"아무도 부탁하지 않았다, 그래도 멈추지 않았다."<br>↓ 아래로 — 색이 있는 곳까지</p>
+</section>
+
+<section id="world-s">
+  <div class="reveal">
+    <div class="label">WORLD</div>
+    <h2>색을 빼앗긴 숲</h2>
+    <p class="lead">
+      아주 오래전, 누군가 이 숲의 <em>생명력</em>을 가져갔습니다.<br>
+      그들은 사라졌고, 숲은 흑백으로 남았습니다.<br><br>
+      남은 것은 그들이 심심해서 깎았다는 목각인형들 —<br>
+      태엽 걸음으로, 어디를 향하지도 않으며, 아직도 걷고 있습니다.
+    </p>
+    <img class="art" src="assets/dolls.jpg" alt="목각인형들">
+    <div class="caption">— 인류가 두고 간 것들</div>
+  </div>
+</section>
+
+<section id="play">
+  <div class="reveal" style="width:100%; display:flex; flex-direction:column; align-items:center;">
+    <div class="label">GAMEPLAY</div>
+    <h2>돌의 문법으로 싸운다</h2>
+    <div class="cards">
+      <div class="card"><span class="k">사륜안 — 思輪眼</span><h3>생각이 빨라지면, 세상이 느려진다</h3><p>시간을 조종하는 힘이 아닙니다. 골렘의 사고가 가속되는 순간, 세상의 진짜 결이 보이기 시작합니다.</p></div>
+      <div class="card"><span class="k">상대적 강도</span><h3>부딪혀 보기 전엔 모른다</h3><p>모든 것에는 강도가 있습니다. 약한 돌로 강한 것을 치면 부서지는 건 이쪽. 재질을 갈아 끼우며 상성을 파훼하세요.</p></div>
+      <div class="card"><span class="k">색의 귀환</span><h3>나아간 만큼, 색이 돌아온다</h3><p>당신이 무언가를 해낼 때마다 세계는 아주 조금씩 색을 되찾습니다. 완전한 색을 보는 날이 올까요?</p></div>
+    </div>
+    <img class="poses" src="assets/golem_poses.jpg" alt="골렘 포즈">
+    <div class="caption">— 서로 붙어 있지 않은 돌들이, 서로를 찾아 떠오른다</div>
+  </div>
+</section>
+
+<section id="journey">
+  <div class="reveal">
+    <div class="label">JOURNEY</div>
+    <h2>숲의 깊은 곳으로</h2>
+    <p class="lead">큰 목표는 없습니다. 눈앞의 문 하나, 몬스터 하나, 재질 하나 —<br>그것들을 하나씩 해결하다 보면, 어느새 멀리 와 있을 뿐.</p>
+    <div class="trail">
+      <span>숲기슭</span><span>높은 숲</span><span>암벽지대</span><span>서리 골짜기</span><span>기생 지대</span><span>광산</span><span>화산 지대</span><span>개발지 폐허</span><span>심근 지대</span><span class="deep">그리고, 중심지</span>
+    </div>
+    <p class="hint">얽히고 되돌아오는 메트로배니아 — 지나온 길은, 나중에 다르게 보입니다.</p>
+  </div>
+</section>
+
+<section id="finale">
+  <div class="veil"></div>
+  <div class="reveal">
+    <div class="label" style="color:#fff">DEMO</div>
+    <h2>색이 돌아오는 순간을,<br>당신의 손으로.</h2>
+    <p class="lead">10–20분 데모 개발 중 — 깨어남부터 첫 색의 귀환까지.</p>
+    <a class="cta" href="#">데모 소식 받기 (준비 중)</a>
+  </div>
+</section>
+
+<footer>© 2026 Stone &amp; Time Team · 모든 이미지와 내용은 개발 중 사양입니다</footer>
+
+<script>
+  function onScroll() {
+    const max = document.documentElement.scrollHeight - innerHeight;
+    document.documentElement.style.setProperty('--p', Math.min(1, scrollY / max).toFixed(3));
+    // 피날레: 화면에 들어오는 정도에 따라 흑백 → 컬러
+    const f = document.getElementById('finale').getBoundingClientRect();
+    const vis = Math.min(1, Math.max(0, (innerHeight - f.top) / (innerHeight * 1.15)));
+    document.documentElement.style.setProperty('--f', vis.toFixed(3));
+  }
+  addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add('on')), { threshold: .18 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

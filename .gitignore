@@ -1,0 +1,11 @@
+# 원본 대용량 에셋은 Drive에서 관리
+*.wav
+*.psd
+*_original.*
+*8k*
+*8K*
+
+# OS/편집기
+.DS_Store
+Thumbs.db
+desktop.ini
