@@ -50,7 +50,8 @@
 <script>
 const WORLD = 9000, SPEED = 0.6;   // 걷기 거리, 스트립 패럴랙스 배속
 const $ = id => document.getElementById(id);
-const regions = ["숲기슭","높은 숲","암벽지대","서리 골짜기","기생 지대","광산","화산 지대","개발지 폐허","심근 지대","중심지"];
+// 실제 배경이 들어간 구간만 표기 (BANDS와 동일 경계)
+function regionName(p){ return p<0.22 ? '숲기슭' : p<0.45 ? '암벽지대' : p<0.85 ? '깊은 숲' : '중심지'; }
 const BANDS = [ {k:'edge',a:0,b:.22}, {k:'cliff',a:.22,b:.45}, {k:'forest',a:.45,b:.85}, {k:'core',a:.85,b:1} ];
 const SRC = {
   gray : { edge:'assets/bg01_edge.jpg', cliff:'assets/bg03_cliff.jpg', forest:'assets/bg_forest.jpg', core:'assets/bg10_core.jpg' },
@@ -242,7 +243,7 @@ function loop(now){
   // 색: 1막 마지막 12% 스며듦 / 2막 상시
   const c = act===2 ? 1 : (p>.88 ? (p-.88)/.12 : 0);
   document.documentElement.style.setProperty('--c',c.toFixed(3));
-  region.textContent=(act===2?'2막 · ':'')+regions[Math.min(9,Math.floor(p*10))]+(act===1&&c>0?' — 색이 온다':'');
+  region.textContent=(act===2?'2막 · ':'')+regionName(p)+(act===1&&c>0?' — 색이 온다':'');
 
   // 격변 → 2막
   if (p>=1 && act===1){
