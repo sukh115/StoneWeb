@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>돌과 시간 — 여정 프로토타입</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0b0b0d; overflow:hidden; font-family:'Pretendard','Noto Sans KR',sans-serif; height:100vh; }
+  #stage { position:fixed; inset:0; }
+  /* ── 이어진 세계: 흑백 스트립 + 컬러 스트립(불투명도 --c) ── */
+  .strip { position:absolute; left:0; will-change:transform; }
+  #stripC { opacity:var(--c,0); }
+  #vign { position:absolute; inset:0; background:radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.6)); pointer-events:none; }
+  #ground { position:absolute; left:0; right:0; bottom:0; height:12vh; background:linear-gradient(180deg, transparent, #050506 45%); pointer-events:none; }
+
+  #golem { position:absolute; bottom:9vh; left:38vw; width:min(150px,26vw); aspect-ratio:600/731; will-change:transform; filter: drop-shadow(0 6px 14px rgba(0,0,0,.7)); }
+  .part { position:absolute; inset:0; will-change:transform; }
+  .part img { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  .part img.cc { opacity:var(--c,0); }
+
+  .dust { position:absolute; width:10px; height:6px; border-radius:50%; background:rgba(190,186,178,.5); pointer-events:none; animation:puff .5s ease-out forwards; }
+  @keyframes puff { from { opacity:.7; transform:translate(0,0) scale(1); } to { opacity:0; transform:translate(-14px,-8px) scale(2.2); } }
+
+  #hud { position:fixed; top:0; left:0; right:0; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; color:#d8d5ce; font-size:13px; letter-spacing:.15em; text-shadow:0 1px 8px #000; z-index:5; }
+  #region { font-weight:800; font-size:15px; }
+  #bar { position:fixed; bottom:0; left:0; height:3px; background:linear-gradient(90deg,#7c7a75,#6ee7a0); width:calc(var(--p,0)*100%); z-index:5; }
+  #msg { position:fixed; bottom:16vh; width:100%; text-align:center; color:#a8a5a0; font-size:14px; letter-spacing:.2em; text-shadow:0 1px 8px #000; animation:pulse 2.4s ease-in-out infinite; z-index:5; }
+  @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+  #fin { position:fixed; inset:0; display:none; flex-direction:column; justify-content:center; align-items:center; text-align:center; color:#fff; background:rgba(5,5,6,.35); pointer-events:none; text-shadow:0 2px 16px rgba(0,0,0,.85); z-index:6; }
+  #fin h1 { font-size:clamp(34px,7vw,64px); }
+  #fin p { margin-top:14px; color:#e6f7ec; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="strip" id="stripG"></div>
+  <div class="strip" id="stripC"></div>
+  <div id="vign"></div>
+  <div id="ground"></div>
+  <div id="golem"></div>
+</div>
+<div id="hud"><span id="region">숲기슭</span><span><button id="mute" style="background:none;border:1px solid #444;border-radius:99px;color:#d8d5ce;padding:4px 12px;cursor:pointer;font-size:13px;">🔊</button>&nbsp; <a href="index.html" style="color:#b9b6af;text-decoration:none;">← 소개</a> &nbsp;·&nbsp; 돌과 시간 · 여정 프로토타입</span></div>
+<audio id="bgmA" src="assets/bgm_act1.mp3" loop preload="auto"></audio>
+<audio id="bgmB" src="assets/bgm_act2.mp3" loop preload="auto"></audio>
+<div id="msg">→ 방향키로 걷기 · 스페이스/↑ 점프 (모바일: 좌우 홀드 / 짧은 탭 점프)</div>
+<div id="bar"></div>
+<div id="fin"><h1></h1><p></p></div>
+
+<script>
+const WORLD = 9000, SPEED = 0.6;   // 걷기 거리, 스트립 패럴랙스 배속
+const $ = id => document.getElementById(id);
+const regions = ["숲기슭","높은 숲","암벽지대","서리 골짜기","기생 지대","광산","화산 지대","개발지 폐허","심근 지대","중심지"];
+const BANDS = [ {k:'edge',a:0,b:.22}, {k:'cliff',a:.22,b:.45}, {k:'forest',a:.45,b:.85}, {k:'core',a:.85,b:1} ];
+const SRC = {
+  gray : { edge:'assets/bg01_edge.jpg', cliff:'assets/bg03_cliff.jpg', forest:'assets/bg_forest.jpg', core:'assets/bg10_core.jpg' },
+  color: { edge:'assets/bg01_edge_color.jpg', cliff:'assets/bg03_cliff_color.jpg', forest:'assets/bg_forest_color.jpg', core:'assets/bg10_core_color.jpg' }
+};
+
+// ── 파츠 리그 생성 ──
+const PART_NAMES=['Lhand','Bcape','Lfoot','body0','Rfoot','Fcape','Rhand'];
+for (const n of PART_NAMES) {
+  const d=document.createElement('div'); d.className='part'; d.id='p'+n;
+  const g=new Image(); g.src=`assets/parts/${n}_web.png`;
+  g.style.cssText='position:absolute;inset:0;width:100%;height:100%;';
+  const c=new Image(); c.src=`assets/parts/${n}_color.png`; c.className='cc';
+  c.style.cssText='position:absolute;inset:0;width:100%;height:100%;';
+  c.onerror=()=>c.remove();
+  d.append(g,c); $('golem').appendChild(d);
+}
+const P = { Lh:$('pLhand'), Bc:$('pBcape'), Lf:$('pLfoot'), Bd:$('pbody0'), Rf:$('pRfoot'), Fc:$('pFcape'), Rh:$('pRhand') };
+
+// ── 이어진 세계 스트립 구축: 미러 타일링 + 경계 페더 크로스페이드 ──
+function buildStrips(){
+  const H = innerHeight*1.15;
+  const span = WORLD*SPEED + innerWidth;          // 세계의 총 픽셀 폭
+  const F = Math.max(240, innerWidth*0.3);        // 경계 크로스페이드 폭
+  for (const kind of ['gray','color']) {
+    const strip = $(kind==='gray'?'stripG':'stripC');
+    strip.innerHTML=''; strip.style.height=H+'px'; strip.style.top=(-(H-innerHeight)*0.45)+'px'; strip.style.width=span+'px';
+    BANDS.forEach((b,bi)=>{
+      const first = bi===0, last = bi===BANDS.length-1;
+      const x0 = b.a*span - (first?0:F), x1 = (last? span : b.b*span + F);
+      const seg = document.createElement('div');
+      seg.style.cssText = `position:absolute;top:0;height:100%;overflow:hidden;left:${x0}px;width:${x1-x0}px;`;
+      const from = first? '#000 0' : `transparent 0, #000 ${2*F}px`;
+      const to   = last ? '#000 100%' : `#000 calc(100% - ${2*F}px), transparent 100%`;
+      const mask = `linear-gradient(to right, ${from}, ${to})`;
+      seg.style.webkitMaskImage = seg.style.maskImage = mask;
+      // 미러 타일링: 한 장 걸러 좌우 반전 → 이음새가 완전히 이어짐
+      const img = new Image(); img.src = SRC[kind][b.k];
+      const place = () => {
+        const iw = H * (img.naturalWidth/img.naturalHeight || 2);
+        const n = Math.ceil((x1-x0)/iw)+1;
+        for (let i=0;i<n;i++){
+          const t = img.cloneNode();
+          t.style.cssText = `position:absolute;top:0;left:${i*iw - 1}px;width:${iw+2}px;height:100%;${i%2?'transform:scaleX(-1);':''}`;
+          seg.appendChild(t);
+        }
+      };
+      img.complete && img.naturalWidth ? place() : img.onload = place;
+      strip.appendChild(seg);
+    });
+  }
+}
+buildStrips(); addEventListener('resize', buildStrips);
+
+// ── 입력 ──
+let x=0, moving=0, walkT=0, done=false, face=1, lastStep=-1, act=1;
+let y=0, vy=0, grounded=true, landT=0, pdT=0;
+const keys={};
+function jump(){ if(grounded){ vy=0.62; grounded=false; sfxJump(); } }
+addEventListener('keydown', e=>{ keys[e.key]=true; if(e.key===' '||e.key==='ArrowUp'||e.key==='z') jump(); msg.style.display='none'; initAudio(); });
+addEventListener('keyup', e=>keys[e.key]=false);
+addEventListener('pointerdown', e=>{ pdT=performance.now(); moving = e.clientX < innerWidth/2 ? -1 : 1; msg.style.display='none'; initAudio(); });
+addEventListener('pointerup', ()=>{ if(performance.now()-pdT<180) jump(); moving=0; });
+
+const golem=$('golem'), region=$('region'), msg=$('msg'), fin=$('fin');
+
+// ── 사운드 엔진: 합성 SFX + BGM 크로스페이드 + 믹스 반전(내면 채널 C) ──
+let AC=null, sfxGain=null, muted=false, audioOn=false;
+const bgmA=$('bgmA'), bgmB=$('bgmB');
+function initAudio(){
+  if (audioOn) return; audioOn=true;
+  AC = new (window.AudioContext||window.webkitAudioContext)();
+  sfxGain = AC.createGain(); sfxGain.connect(AC.destination);
+  sfxGain.gain.value = 0.9;                       // 1막: 골렘 발소리만 큰 세계
+  bgmA.volume=0; bgmB.volume=0;
+  bgmA.play().then(()=>{ fade(bgmA, act===2?0:0.5, 2.5) }).catch(()=>{});
+  // B는 미리 잠금만 해제해두고 대기 (격변 때 시작)
+  bgmB.play().then(()=>{ bgmB.pause(); bgmB.currentTime=0; }).catch(()=>{});
+  if (act===2){ bgmB.play().then(()=>fade(bgmB,0.8,2)).catch(()=>{}); }
+}
+function fade(el, to, sec){
+  const from=el.volume, t0=performance.now();
+  (function step(){ const k=Math.min(1,(performance.now()-t0)/(sec*1000));
+    el.volume = muted?0 : from+(to-from)*k; el._target=to;
+    if(k<1) requestAnimationFrame(step); })();
+}
+// 발소리: 재질 임팩트의 프로토타입 — 필터 노이즈 버스트
+function sfxStep(heavy=false){
+  if(!AC||muted) return;
+  const t=AC.currentTime, d=heavy?0.14:0.07;
+  const buf=AC.createBuffer(1,AC.sampleRate*d,AC.sampleRate), ch=buf.getChannelData(0);
+  for(let i=0;i<ch.length;i++) ch[i]=(Math.random()*2-1)*(1-i/ch.length)**2;
+  const src=AC.createBufferSource(); src.buffer=buf;
+  const f=AC.createBiquadFilter(); f.type='lowpass';
+  f.frequency.value=(heavy?300:420)+Math.random()*140;
+  const g=AC.createGain(); g.gain.setValueAtTime(heavy?0.7:0.32,t);
+  g.gain.exponentialRampToValueAtTime(0.001,t+d);
+  src.connect(f).connect(g).connect(sfxGain); src.start(t);
+}
+function sfxJump(){
+  if(!AC||muted) return;
+  const t=AC.currentTime, o=AC.createOscillator(), g=AC.createGain();
+  o.type='triangle'; o.frequency.setValueAtTime(160,t); o.frequency.exponentialRampToValueAtTime(330,t+0.16);
+  g.gain.setValueAtTime(0.12,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.2);
+  o.connect(g).connect(sfxGain); o.start(t); o.stop(t+0.22);
+}
+// 격변 스웰: 저음 화음이 차오름 (진화 스팅 자리 임시)
+function sfxSurge(){
+  if(!AC||muted) return;
+  const t=AC.currentTime;
+  [110,165,220,275].forEach((fr,i)=>{
+    const o=AC.createOscillator(), g=AC.createGain();
+    o.type='sine'; o.frequency.value=fr;
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.14,t+1.4+i*.15);
+    g.gain.exponentialRampToValueAtTime(0.001,t+4.5);
+    o.connect(g).connect(sfxGain); o.start(t); o.stop(t+4.6);
+  });
+}
+$('mute').onclick=e=>{ e.stopPropagation(); muted=!muted;
+  $('mute').textContent=muted?'🔇':'🔊';
+  bgmA.volume=muted?0:(bgmA._target??0); bgmB.volume=muted?0:(bgmB._target??0);
+};
+function dust(){
+  const d=document.createElement('div'); d.className='dust';
+  d.style.left=`calc(38vw + ${golem.offsetWidth*0.45}px)`; d.style.bottom='9.2vh';
+  $('stage').appendChild(d); setTimeout(()=>d.remove(),550);
+}
+
+let last=performance.now();
+function loop(now){
+  const dt=Math.min(40, now-last); last=now;
+  let dir = moving || (keys['ArrowRight']?1:keys['ArrowLeft']?-1:0);
+  if (done) dir=0;
+  if (dir) face=dir;
+
+  if (!grounded) {
+    vy -= 0.0022*dt; y += vy*dt;
+    if (y<=0){ y=0; vy=0; grounded=true; landT=now; dust(); sfxStep(true); }
+  }
+  golem.style.bottom = `calc(9vh + ${y.toFixed(1)}px)`;
+
+  if (!grounded) {
+    const up=vy>0;
+    P.Rf.style.transform=`translate(2px, ${up?6:3}px)`;  P.Lf.style.transform=`translate(-2px, ${up?8:4}px)`;
+    P.Bd.style.transform=`rotate(${up?-2:2}deg)`;
+    P.Rh.style.transform=`translateY(${up?-6:-2}px) rotate(${up?-10:4}deg)`;
+    P.Lh.style.transform=`translateY(${up?-6:-2}px) rotate(${up?10:-4}deg)`;
+    P.Fc.style.transform=`rotate(${up?4:-3}deg) translateY(${up?3:-2}px)`;
+    P.Bc.style.transform=`rotate(${up?7:-5}deg) translateY(${up?4:-3}px)`;
+    if (dir) x=Math.max(0,Math.min(WORLD, x + dir*0.34*dt));
+    golem.style.transform=`scaleX(${face})`;
+  } else if (dir) {
+    x=Math.max(0,Math.min(WORLD, x + dir*0.34*dt));
+    walkT+=dt;
+    const T=420, ph=(walkT%T)/T, w=Math.PI*2, swing=7, lift=9;
+    const rY=-Math.max(0,Math.sin(ph*w))*lift,      rX=-Math.cos(ph*w)*swing;
+    const lY=-Math.max(0,Math.sin((ph+.5)*w))*lift, lX=-Math.cos((ph+.5)*w)*swing;
+    P.Rf.style.transform=`translate(${rX}px,${rY}px)`; P.Lf.style.transform=`translate(${lX}px,${lY}px)`;
+    const bob=-Math.abs(Math.sin(ph*w))*4;
+    P.Bd.style.transform=`translateY(${bob}px) rotate(1.5deg)`;
+    P.Rh.style.transform=`translate(${lX*.7}px,${bob*.6}px) rotate(${Math.sin((ph+.5)*w)*6}deg)`;
+    P.Lh.style.transform=`translate(${rX*.7}px,${bob*.6}px) rotate(${Math.sin(ph*w)*6}deg)`;
+    const cape=Math.sin((ph-.15)*w);
+    P.Fc.style.transform=`translateY(${bob*.8}px) rotate(${-1.2+cape*1.4}deg)`;
+    P.Bc.style.transform=`translateY(${bob*.8}px) rotate(${-2+cape*2}deg)`;
+    const step=Math.floor((walkT%T)/(T/2));
+    if (step!==lastStep){ lastStep=step; dust(); sfxStep(); }
+    const sq = now-landT<110 ? 0.94 : 1;
+    golem.style.transform=`scaleX(${face}) scaleY(${sq})`;
+  } else {
+    const t=now/1000;
+    P.Bd.style.transform=`translateY(${Math.sin(t*1.1)*2.5}px)`;
+    P.Rh.style.transform=`translateY(${Math.sin(t*1.4+1.2)*3.5}px)`;
+    P.Lh.style.transform=`translateY(${Math.sin(t*1.3+2.4)*3.5}px)`;
+    P.Fc.style.transform=`translateY(${Math.sin(t*1.1+.3)*2}px) rotate(${Math.sin(t*.7)*0.8}deg)`;
+    P.Bc.style.transform=`translateY(${Math.sin(t*1.0+.6)*2}px) rotate(${Math.sin(t*.7+.5)*1.2}deg)`;
+    P.Rf.style.transform=P.Lf.style.transform='translate(0,0)';
+    golem.style.transform=`scaleX(${face})`;
+  }
+
+  const p=x/WORLD;
+  document.documentElement.style.setProperty('--p',p.toFixed(4));
+  // 이어진 세계 이동
+  const tx=(-x*SPEED).toFixed(1);
+  $('stripG').style.transform=$('stripC').style.transform=`translateX(${tx}px)`;
+  // 깊이 명암 (2막은 밝게 유지)
+  const dark = act===2 ? .95 : Math.max(.55, 1 - p*.45);
+  $('stripG').style.filter=$('stripC').style.filter=`brightness(${dark})`;
+  // 색: 1막 마지막 12% 스며듦 / 2막 상시
+  const c = act===2 ? 1 : (p>.88 ? (p-.88)/.12 : 0);
+  document.documentElement.style.setProperty('--c',c.toFixed(3));
+  region.textContent=(act===2?'2막 · ':'')+regions[Math.min(9,Math.floor(p*10))]+(act===1&&c>0?' — 색이 온다':'');
+
+  // 격변 → 2막
+  if (p>=1 && act===1){
+    act=2;
+    // 진화하는 음악 — 순차 전환: 다크 테마가 잦아들고, 정적 한 숨, 그리고 새 곡이 차오른다
+    sfxSurge();
+    fade(bgmA, 0, 2.5);
+    setTimeout(()=>{ bgmA.pause();
+      bgmB.currentTime=0;
+      bgmB.play().then(()=>fade(bgmB, 0.85, 3.5)).catch(()=>{});
+    }, 3200); // 스웰이 정점을 지나고 빛이 퍼진 뒤에 시작
+    if (sfxGain) sfxGain.gain.linearRampToValueAtTime(0.35, AC.currentTime+4);
+    const w=document.createElement('div');
+    w.style.cssText='position:fixed;inset:0;background:radial-gradient(circle at 62% 55%, #fff 0%, rgba(255,255,255,.85) 25%, transparent 62%);opacity:1;transition:opacity 2.2s ease;pointer-events:none;z-index:8;';
+    document.body.appendChild(w); requestAnimationFrame(()=>w.style.opacity='0'); setTimeout(()=>w.remove(),2400);
+    fin.querySelector('h1').textContent='색이 돌아왔다';
+    fin.querySelector('p').textContent='← 왔던 길을 되돌아가세요 — 같은 길이 다르게 보입니다';
+    fin.style.display='flex'; fin.style.background='transparent';
+    setTimeout(()=>{ fin.style.display='none'; }, 3200);
+  }
+  if (act===2 && p<=0 && !done){
+    done=true;
+    fin.querySelector('h1').textContent='같은 길이, 다르게 보인다';
+    fin.querySelector('p').textContent='— 여기까지가 프로토타입입니다 · 돌과 시간 —';
+    fin.style.display='flex'; fin.style.background='rgba(5,5,6,.35)';
+  }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

@@ -2,276 +2,113 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>돌과 시간 — 여정 프로토타입</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>돌과 시간 — 어느 조약돌의 이야기</title>
+<meta name="description" content="색을 잃은 숲에서 이유 없이 깨어난 조약돌 골렘의 이야기. 2D 메트로배니아 「돌과 시간」.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&display=swap" rel="stylesheet">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:#0b0b0d; overflow:hidden; font-family:'Pretendard','Noto Sans KR',sans-serif; height:100vh; }
-  #stage { position:fixed; inset:0; }
-  /* ── 이어진 세계: 흑백 스트립 + 컬러 스트립(불투명도 --c) ── */
-  .strip { position:absolute; left:0; will-change:transform; }
-  #stripC { opacity:var(--c,0); }
-  #vign { position:absolute; inset:0; background:radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.6)); pointer-events:none; }
-  #ground { position:absolute; left:0; right:0; bottom:0; height:12vh; background:linear-gradient(180deg, transparent, #050506 45%); pointer-events:none; }
+  html { scroll-behavior:smooth; }
+  body { background:#0a0a0c; color:#e9e4d8; font-family:'Noto Serif KR', serif; }
 
-  #golem { position:absolute; bottom:9vh; left:38vw; width:min(150px,26vw); aspect-ratio:600/731; will-change:transform; filter: drop-shadow(0 6px 14px rgba(0,0,0,.7)); }
-  .part { position:absolute; inset:0; will-change:transform; }
-  .part img { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
-  .part img.cc { opacity:var(--c,0); }
+  /* ── 표지 ── */
+  #cover { min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:24px; }
+  #cover .sub { font-size:15px; letter-spacing:.4em; color:#8a857a; margin-bottom:28px; }
+  #cover h1 { font-size:clamp(46px,9vw,96px); font-weight:600; letter-spacing:.08em; }
+  #cover .down { margin-top:14vh; color:#6b675e; font-size:14px; letter-spacing:.3em; animation:breath 3.5s ease-in-out infinite; }
+  @keyframes breath { 0%,100%{opacity:.35} 50%{opacity:.9} }
 
-  .dust { position:absolute; width:10px; height:6px; border-radius:50%; background:rgba(190,186,178,.5); pointer-events:none; animation:puff .5s ease-out forwards; }
-  @keyframes puff { from { opacity:.7; transform:translate(0,0) scale(1); } to { opacity:0; transform:translate(-14px,-8px) scale(2.2); } }
+  /* ── 장(章) ── */
+  .ch { position:relative; min-height:100vh; display:flex; align-items:flex-end; justify-content:center; overflow:hidden; }
+  .ch .art, .ch .art-c { position:absolute; inset:0; background-size:cover; background-position:center 35%; }
+  .ch .art-c { opacity:0; transition:opacity .3s linear; }
+  .ch .shade { position:absolute; inset:0; background:linear-gradient(180deg, rgba(10,10,12,.42), transparent 32%, transparent 55%, rgba(10,10,12,.9) 88%); }
+  .ch .txt { position:relative; max-width:35em; padding:0 28px 13vh; font-size:clamp(16.5px,2vw,19.5px); line-height:2.25; color:#efe9dd;
+             text-shadow:0 1px 10px rgba(0,0,0,.85), 0 0 30px rgba(0,0,0,.5); opacity:0; transform:translateY(18px); transition:opacity 1.1s ease, transform 1.1s ease; }
+  .ch.on .txt { opacity:1; transform:none; }
+  .ch .txt em { font-style:normal; color:#fff; }
 
-  #hud { position:fixed; top:0; left:0; right:0; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; color:#d8d5ce; font-size:13px; letter-spacing:.15em; text-shadow:0 1px 8px #000; z-index:5; }
-  #region { font-weight:800; font-size:15px; }
-  #bar { position:fixed; bottom:0; left:0; height:3px; background:linear-gradient(90deg,#7c7a75,#6ee7a0); width:calc(var(--p,0)*100%); z-index:5; }
-  #msg { position:fixed; bottom:16vh; width:100%; text-align:center; color:#a8a5a0; font-size:14px; letter-spacing:.2em; text-shadow:0 1px 8px #000; animation:pulse 2.4s ease-in-out infinite; z-index:5; }
-  @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
-  #fin { position:fixed; inset:0; display:none; flex-direction:column; justify-content:center; align-items:center; text-align:center; color:#fff; background:rgba(5,5,6,.35); pointer-events:none; text-shadow:0 2px 16px rgba(0,0,0,.85); z-index:6; }
-  #fin h1 { font-size:clamp(34px,7vw,64px); }
-  #fin p { margin-top:14px; color:#e6f7ec; }
+  /* 3장 — 골렘이 서 있는 장 */
+  #golemfig { position:absolute; left:50%; bottom:26vh; transform:translateX(-50%); width:min(120px,20vw); mix-blend-mode:screen; animation:bob 5s ease-in-out infinite; filter:drop-shadow(0 0 30px rgba(233,228,216,.08)); }
+  @keyframes bob { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-8px)} }
+
+  /* ── 끝 장 ── */
+  #last { min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:24px; position:relative; overflow:hidden; }
+  #last .art { position:absolute; inset:0; background:url('assets/bg10_core_color.jpg') center 40%/cover; opacity:.5; }
+  #last .shade { position:absolute; inset:0; background:radial-gradient(ellipse at center, transparent 30%, rgba(10,10,12,.88) 78%); }
+  #last p { position:relative; font-size:clamp(17px,2.2vw,21px); line-height:2.2; color:#f2ede2; text-shadow:0 1px 12px rgba(0,0,0,.9); }
+  #last a.go { position:relative; margin-top:44px; display:inline-block; padding:16px 44px; border:1px solid rgba(233,228,216,.5); border-radius:2px;
+               color:#f2ede2; text-decoration:none; font-size:16px; letter-spacing:.25em; transition:background .3s, color .3s; }
+  #last a.go:hover { background:#efe9dd; color:#0a0a0c; }
+
+  footer { padding:52px 24px; text-align:center; font-size:12.5px; color:#565349; line-height:2; }
+  footer a { color:#7d7a6e; }
 </style>
 </head>
 <body>
-<div id="stage">
-  <div class="strip" id="stripG"></div>
-  <div class="strip" id="stripC"></div>
-  <div id="vign"></div>
-  <div id="ground"></div>
-  <div id="golem"></div>
-</div>
-<div id="hud"><span id="region">숲기슭</span><span><button id="mute" style="background:none;border:1px solid #444;border-radius:99px;color:#d8d5ce;padding:4px 12px;cursor:pointer;font-size:13px;">🔊</button>&nbsp; 돌과 시간 · 여정 프로토타입</span></div>
-<audio id="bgmA" src="assets/bgm_act1.mp3" loop preload="auto"></audio>
-<audio id="bgmB" src="assets/bgm_act2.mp3" loop preload="auto"></audio>
-<div id="msg">→ 방향키로 걷기 · 스페이스/↑ 점프 (모바일: 좌우 홀드 / 짧은 탭 점프)</div>
-<div id="bar"></div>
-<div id="fin"><h1></h1><p></p></div>
+
+<section id="cover">
+  <div class="sub">어느 조약돌의 이야기</div>
+  <h1>돌과 시간</h1>
+  <div class="down">아래로 넘겨 주세요</div>
+</section>
+
+<section class="ch">
+  <div class="art" style="background-image:url('assets/bg_forest.jpg')"></div>
+  <div class="shade"></div>
+  <p class="txt">옛날, 아무것도 움직이지 않는 숲이 있었습니다. 나무는 나무의 자리에서, 이끼는 이끼의 자리에서 수백 년씩 자랐습니다. 움직이는 것이 없었으니 서두를 일도 없었고, 숲은 그것으로 충분했습니다.</p>
+</section>
+
+<section class="ch">
+  <div class="art" style="background-image:url('assets/core_alt_bw.jpg')"></div>
+  <div class="shade"></div>
+  <p class="txt">어느 해, 먼 곳에서 온 이들이 이 숲에서 무언가를 길어 올리기 시작했습니다. 그들은 부지런했고, 오래 머물렀고, 어느 날 소리도 없이 사라졌습니다. 다만 그들이 두고 간 기계들은 주인이 없어진 뒤에도 일을 멈추지 않았습니다. 숲의 색은 그렇게, 아무도 모르는 사이에 조금씩 옅어졌습니다.</p>
+</section>
+
+<section class="ch">
+  <div class="art" style="background-image:url('assets/bg01_edge.jpg')"></div>
+  <div class="shade"></div>
+  <img id="golemfig" src="assets/golem_hero.jpg" alt="">
+  <p class="txt">그리고 아주 오랜 시간이 지난 어느 비 갠 아침, 웅덩이 옆에 쌓여 있던 돌무더기 하나가 일어났습니다. 왜 하필 그 돌이었는지, 왜 하필 그날이었는지는 아무도 모릅니다. 아마 돌 자신도 몰랐을 것입니다.</p>
+</section>
+
+<section class="ch">
+  <div class="art" style="background-image:url('assets/bg03_cliff.jpg')"></div>
+  <div class="shade"></div>
+  <p class="txt">돌에게는 사명 같은 것이 없었습니다. 눈앞에 길이 있으면 걸었고, 막힌 곳이 있으면 두드려 보았고, 두드려서 안 되면 손에 낀 돌을 다른 것으로 바꿔 보았습니다. 그것이 이 돌이 세상을 배워 가는 방식의 전부였습니다.</p>
+</section>
+
+<section class="ch" id="colorch">
+  <div class="art" style="background-image:url('assets/bg01_edge.jpg')"></div>
+  <div class="art-c" style="background-image:url('assets/bg01_edge_color.jpg')"></div>
+  <div class="shade"></div>
+  <p class="txt">이상한 일은 그다음부터였습니다. 돌이 무언가를 하나씩 해낼 때마다, 세상에는 아주 옅은 색이 스며들었습니다. 돌은 그것이 무엇을 뜻하는지 몰랐습니다. 그래도 멈추지 않았습니다. <em>아무도 부탁하지 않았는데도요.</em></p>
+</section>
+
+<section id="last">
+  <div class="art"></div>
+  <div class="shade"></div>
+  <p>이 이야기가 어디까지 가는지는,<br>걸어 본 이만 압니다.</p>
+  <a class="go" href="play.html">직접 걸어보기</a>
+</section>
+
+<footer>
+  돌과 시간 · Stone &amp; Time — 2D 메트로배니아, 개발 중<br>
+  <a href="play.html">웹 프로토타입</a> · 모든 그림과 음악은 개발 중 시안입니다
+</footer>
 
 <script>
-const WORLD = 9000, SPEED = 0.6;   // 걷기 거리, 스트립 패럴랙스 배속
-const $ = id => document.getElementById(id);
-const regions = ["숲기슭","높은 숲","암벽지대","서리 골짜기","기생 지대","광산","화산 지대","개발지 폐허","심근 지대","중심지"];
-const BANDS = [ {k:'edge',a:0,b:.22}, {k:'cliff',a:.22,b:.45}, {k:'forest',a:.45,b:.85}, {k:'core',a:.85,b:1} ];
-const SRC = {
-  gray : { edge:'assets/bg01_edge.jpg', cliff:'assets/bg03_cliff.jpg', forest:'assets/bg_forest.jpg', core:'assets/bg10_core.jpg' },
-  color: { edge:'assets/bg01_edge_color.jpg', cliff:'assets/bg03_cliff_color.jpg', forest:'assets/bg_forest_color.jpg', core:'assets/bg10_core_color.jpg' }
-};
-
-// ── 파츠 리그 생성 ──
-const PART_NAMES=['Lhand','Bcape','Lfoot','body0','Rfoot','Fcape','Rhand'];
-for (const n of PART_NAMES) {
-  const d=document.createElement('div'); d.className='part'; d.id='p'+n;
-  const g=new Image(); g.src=`assets/parts/${n}_web.png`;
-  g.style.cssText='position:absolute;inset:0;width:100%;height:100%;';
-  const c=new Image(); c.src=`assets/parts/${n}_color.png`; c.className='cc';
-  c.style.cssText='position:absolute;inset:0;width:100%;height:100%;';
-  c.onerror=()=>c.remove();
-  d.append(g,c); $('golem').appendChild(d);
-}
-const P = { Lh:$('pLhand'), Bc:$('pBcape'), Lf:$('pLfoot'), Bd:$('pbody0'), Rf:$('pRfoot'), Fc:$('pFcape'), Rh:$('pRhand') };
-
-// ── 이어진 세계 스트립 구축: 미러 타일링 + 경계 페더 크로스페이드 ──
-function buildStrips(){
-  const H = innerHeight*1.15;
-  const span = WORLD*SPEED + innerWidth;          // 세계의 총 픽셀 폭
-  const F = Math.max(240, innerWidth*0.3);        // 경계 크로스페이드 폭
-  for (const kind of ['gray','color']) {
-    const strip = $(kind==='gray'?'stripG':'stripC');
-    strip.innerHTML=''; strip.style.height=H+'px'; strip.style.top=(-(H-innerHeight)*0.45)+'px'; strip.style.width=span+'px';
-    BANDS.forEach((b,bi)=>{
-      const first = bi===0, last = bi===BANDS.length-1;
-      const x0 = b.a*span - (first?0:F), x1 = (last? span : b.b*span + F);
-      const seg = document.createElement('div');
-      seg.style.cssText = `position:absolute;top:0;height:100%;overflow:hidden;left:${x0}px;width:${x1-x0}px;`;
-      const from = first? '#000 0' : `transparent 0, #000 ${2*F}px`;
-      const to   = last ? '#000 100%' : `#000 calc(100% - ${2*F}px), transparent 100%`;
-      const mask = `linear-gradient(to right, ${from}, ${to})`;
-      seg.style.webkitMaskImage = seg.style.maskImage = mask;
-      // 미러 타일링: 한 장 걸러 좌우 반전 → 이음새가 완전히 이어짐
-      const img = new Image(); img.src = SRC[kind][b.k];
-      const place = () => {
-        const iw = H * (img.naturalWidth/img.naturalHeight || 2);
-        const n = Math.ceil((x1-x0)/iw)+1;
-        for (let i=0;i<n;i++){
-          const t = img.cloneNode();
-          t.style.cssText = `position:absolute;top:0;left:${i*iw - 1}px;width:${iw+2}px;height:100%;${i%2?'transform:scaleX(-1);':''}`;
-          seg.appendChild(t);
-        }
-      };
-      img.complete && img.naturalWidth ? place() : img.onload = place;
-      strip.appendChild(seg);
-    });
-  }
-}
-buildStrips(); addEventListener('resize', buildStrips);
-
-// ── 입력 ──
-let x=0, moving=0, walkT=0, done=false, face=1, lastStep=-1, act=1;
-let y=0, vy=0, grounded=true, landT=0, pdT=0;
-const keys={};
-function jump(){ if(grounded){ vy=0.62; grounded=false; sfxJump(); } }
-addEventListener('keydown', e=>{ keys[e.key]=true; if(e.key===' '||e.key==='ArrowUp'||e.key==='z') jump(); msg.style.display='none'; initAudio(); });
-addEventListener('keyup', e=>keys[e.key]=false);
-addEventListener('pointerdown', e=>{ pdT=performance.now(); moving = e.clientX < innerWidth/2 ? -1 : 1; msg.style.display='none'; initAudio(); });
-addEventListener('pointerup', ()=>{ if(performance.now()-pdT<180) jump(); moving=0; });
-
-const golem=$('golem'), region=$('region'), msg=$('msg'), fin=$('fin');
-
-// ── 사운드 엔진: 합성 SFX + BGM 크로스페이드 + 믹스 반전(내면 채널 C) ──
-let AC=null, sfxGain=null, muted=false, audioOn=false;
-const bgmA=$('bgmA'), bgmB=$('bgmB');
-function initAudio(){
-  if (audioOn) return; audioOn=true;
-  AC = new (window.AudioContext||window.webkitAudioContext)();
-  sfxGain = AC.createGain(); sfxGain.connect(AC.destination);
-  sfxGain.gain.value = 0.9;                       // 1막: 골렘 발소리만 큰 세계
-  bgmA.volume=0; bgmB.volume=0;
-  bgmA.play().then(()=>{ fade(bgmA, act===2?0:0.5, 2.5) }).catch(()=>{});
-  // B는 미리 잠금만 해제해두고 대기 (격변 때 시작)
-  bgmB.play().then(()=>{ bgmB.pause(); bgmB.currentTime=0; }).catch(()=>{});
-  if (act===2){ bgmB.play().then(()=>fade(bgmB,0.8,2)).catch(()=>{}); }
-}
-function fade(el, to, sec){
-  const from=el.volume, t0=performance.now();
-  (function step(){ const k=Math.min(1,(performance.now()-t0)/(sec*1000));
-    el.volume = muted?0 : from+(to-from)*k; el._target=to;
-    if(k<1) requestAnimationFrame(step); })();
-}
-// 발소리: 재질 임팩트의 프로토타입 — 필터 노이즈 버스트
-function sfxStep(heavy=false){
-  if(!AC||muted) return;
-  const t=AC.currentTime, d=heavy?0.14:0.07;
-  const buf=AC.createBuffer(1,AC.sampleRate*d,AC.sampleRate), ch=buf.getChannelData(0);
-  for(let i=0;i<ch.length;i++) ch[i]=(Math.random()*2-1)*(1-i/ch.length)**2;
-  const src=AC.createBufferSource(); src.buffer=buf;
-  const f=AC.createBiquadFilter(); f.type='lowpass';
-  f.frequency.value=(heavy?300:420)+Math.random()*140;
-  const g=AC.createGain(); g.gain.setValueAtTime(heavy?0.7:0.32,t);
-  g.gain.exponentialRampToValueAtTime(0.001,t+d);
-  src.connect(f).connect(g).connect(sfxGain); src.start(t);
-}
-function sfxJump(){
-  if(!AC||muted) return;
-  const t=AC.currentTime, o=AC.createOscillator(), g=AC.createGain();
-  o.type='triangle'; o.frequency.setValueAtTime(160,t); o.frequency.exponentialRampToValueAtTime(330,t+0.16);
-  g.gain.setValueAtTime(0.12,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.2);
-  o.connect(g).connect(sfxGain); o.start(t); o.stop(t+0.22);
-}
-// 격변 스웰: 저음 화음이 차오름 (진화 스팅 자리 임시)
-function sfxSurge(){
-  if(!AC||muted) return;
-  const t=AC.currentTime;
-  [110,165,220,275].forEach((fr,i)=>{
-    const o=AC.createOscillator(), g=AC.createGain();
-    o.type='sine'; o.frequency.value=fr;
-    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.14,t+1.4+i*.15);
-    g.gain.exponentialRampToValueAtTime(0.001,t+4.5);
-    o.connect(g).connect(sfxGain); o.start(t); o.stop(t+4.6);
-  });
-}
-$('mute').onclick=e=>{ e.stopPropagation(); muted=!muted;
-  $('mute').textContent=muted?'🔇':'🔊';
-  bgmA.volume=muted?0:(bgmA._target??0); bgmB.volume=muted?0:(bgmB._target??0);
-};
-function dust(){
-  const d=document.createElement('div'); d.className='dust';
-  d.style.left=`calc(38vw + ${golem.offsetWidth*0.45}px)`; d.style.bottom='9.2vh';
-  $('stage').appendChild(d); setTimeout(()=>d.remove(),550);
-}
-
-let last=performance.now();
-function loop(now){
-  const dt=Math.min(40, now-last); last=now;
-  let dir = moving || (keys['ArrowRight']?1:keys['ArrowLeft']?-1:0);
-  if (done) dir=0;
-  if (dir) face=dir;
-
-  if (!grounded) {
-    vy -= 0.0022*dt; y += vy*dt;
-    if (y<=0){ y=0; vy=0; grounded=true; landT=now; dust(); sfxStep(true); }
-  }
-  golem.style.bottom = `calc(9vh + ${y.toFixed(1)}px)`;
-
-  if (!grounded) {
-    const up=vy>0;
-    P.Rf.style.transform=`translate(2px, ${up?6:3}px)`;  P.Lf.style.transform=`translate(-2px, ${up?8:4}px)`;
-    P.Bd.style.transform=`rotate(${up?-2:2}deg)`;
-    P.Rh.style.transform=`translateY(${up?-6:-2}px) rotate(${up?-10:4}deg)`;
-    P.Lh.style.transform=`translateY(${up?-6:-2}px) rotate(${up?10:-4}deg)`;
-    P.Fc.style.transform=`rotate(${up?4:-3}deg) translateY(${up?3:-2}px)`;
-    P.Bc.style.transform=`rotate(${up?7:-5}deg) translateY(${up?4:-3}px)`;
-    if (dir) x=Math.max(0,Math.min(WORLD, x + dir*0.34*dt));
-    golem.style.transform=`scaleX(${face})`;
-  } else if (dir) {
-    x=Math.max(0,Math.min(WORLD, x + dir*0.34*dt));
-    walkT+=dt;
-    const T=420, ph=(walkT%T)/T, w=Math.PI*2, swing=7, lift=9;
-    const rY=-Math.max(0,Math.sin(ph*w))*lift,      rX=-Math.cos(ph*w)*swing;
-    const lY=-Math.max(0,Math.sin((ph+.5)*w))*lift, lX=-Math.cos((ph+.5)*w)*swing;
-    P.Rf.style.transform=`translate(${rX}px,${rY}px)`; P.Lf.style.transform=`translate(${lX}px,${lY}px)`;
-    const bob=-Math.abs(Math.sin(ph*w))*4;
-    P.Bd.style.transform=`translateY(${bob}px) rotate(1.5deg)`;
-    P.Rh.style.transform=`translate(${lX*.7}px,${bob*.6}px) rotate(${Math.sin((ph+.5)*w)*6}deg)`;
-    P.Lh.style.transform=`translate(${rX*.7}px,${bob*.6}px) rotate(${Math.sin(ph*w)*6}deg)`;
-    const cape=Math.sin((ph-.15)*w);
-    P.Fc.style.transform=`translateY(${bob*.8}px) rotate(${-1.2+cape*1.4}deg)`;
-    P.Bc.style.transform=`translateY(${bob*.8}px) rotate(${-2+cape*2}deg)`;
-    const step=Math.floor((walkT%T)/(T/2));
-    if (step!==lastStep){ lastStep=step; dust(); sfxStep(); }
-    const sq = now-landT<110 ? 0.94 : 1;
-    golem.style.transform=`scaleX(${face}) scaleY(${sq})`;
-  } else {
-    const t=now/1000;
-    P.Bd.style.transform=`translateY(${Math.sin(t*1.1)*2.5}px)`;
-    P.Rh.style.transform=`translateY(${Math.sin(t*1.4+1.2)*3.5}px)`;
-    P.Lh.style.transform=`translateY(${Math.sin(t*1.3+2.4)*3.5}px)`;
-    P.Fc.style.transform=`translateY(${Math.sin(t*1.1+.3)*2}px) rotate(${Math.sin(t*.7)*0.8}deg)`;
-    P.Bc.style.transform=`translateY(${Math.sin(t*1.0+.6)*2}px) rotate(${Math.sin(t*.7+.5)*1.2}deg)`;
-    P.Rf.style.transform=P.Lf.style.transform='translate(0,0)';
-    golem.style.transform=`scaleX(${face})`;
-  }
-
-  const p=x/WORLD;
-  document.documentElement.style.setProperty('--p',p.toFixed(4));
-  // 이어진 세계 이동
-  const tx=(-x*SPEED).toFixed(1);
-  $('stripG').style.transform=$('stripC').style.transform=`translateX(${tx}px)`;
-  // 깊이 명암 (2막은 밝게 유지)
-  const dark = act===2 ? .95 : Math.max(.55, 1 - p*.45);
-  $('stripG').style.filter=$('stripC').style.filter=`brightness(${dark})`;
-  // 색: 1막 마지막 12% 스며듦 / 2막 상시
-  const c = act===2 ? 1 : (p>.88 ? (p-.88)/.12 : 0);
-  document.documentElement.style.setProperty('--c',c.toFixed(3));
-  region.textContent=(act===2?'2막 · ':'')+regions[Math.min(9,Math.floor(p*10))]+(act===1&&c>0?' — 색이 온다':'');
-
-  // 격변 → 2막
-  if (p>=1 && act===1){
-    act=2;
-    // 진화하는 음악 — 순차 전환: 다크 테마가 잦아들고, 정적 한 숨, 그리고 새 곡이 차오른다
-    sfxSurge();
-    fade(bgmA, 0, 2.5);
-    setTimeout(()=>{ bgmA.pause();
-      bgmB.currentTime=0;
-      bgmB.play().then(()=>fade(bgmB, 0.85, 3.5)).catch(()=>{});
-    }, 3200); // 스웰이 정점을 지나고 빛이 퍼진 뒤에 시작
-    if (sfxGain) sfxGain.gain.linearRampToValueAtTime(0.35, AC.currentTime+4);
-    const w=document.createElement('div');
-    w.style.cssText='position:fixed;inset:0;background:radial-gradient(circle at 62% 55%, #fff 0%, rgba(255,255,255,.85) 25%, transparent 62%);opacity:1;transition:opacity 2.2s ease;pointer-events:none;z-index:8;';
-    document.body.appendChild(w); requestAnimationFrame(()=>w.style.opacity='0'); setTimeout(()=>w.remove(),2400);
-    fin.querySelector('h1').textContent='색이 돌아왔다';
-    fin.querySelector('p').textContent='← 왔던 길을 되돌아가세요 — 같은 길이 다르게 보입니다';
-    fin.style.display='flex'; fin.style.background='transparent';
-    setTimeout(()=>{ fin.style.display='none'; }, 3200);
-  }
-  if (act===2 && p<=0 && !done){
-    done=true;
-    fin.querySelector('h1').textContent='같은 길이, 다르게 보인다';
-    fin.querySelector('p').textContent='— 여기까지가 프로토타입입니다 · 돌과 시간 —';
-    fin.style.display='flex'; fin.style.background='rgba(5,5,6,.35)';
-  }
-  requestAnimationFrame(loop);
-}
-requestAnimationFrame(loop);
+  // 문단: 화면에 들어오면 떠오름
+  const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add('on')), { threshold:.35 });
+  document.querySelectorAll('.ch').forEach(el => io.observe(el));
+  // 다섯째 장: 머무는 동안 색이 스며듦
+  const cc = document.getElementById('colorch'), art = cc.querySelector('.art-c');
+  addEventListener('scroll', () => {
+    const r = cc.getBoundingClientRect();
+    const v = Math.min(1, Math.max(0, (innerHeight*0.75 - r.top) / (innerHeight*0.9)));
+    art.style.opacity = (v*0.95).toFixed(3);
+  }, { passive:true });
 </script>
 </body>
 </html>
