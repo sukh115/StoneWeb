@@ -40,7 +40,7 @@
   <div id="ground"></div>
   <div id="golem"></div>
 </div>
-<div id="hud"><span id="region">숲기슭</span><span><button id="mute" style="background:none;border:1px solid #444;border-radius:99px;color:#d8d5ce;padding:4px 12px;cursor:pointer;font-size:13px;">🔊</button>&nbsp; <a href="index.html" style="color:#b9b6af;text-decoration:none;">← 소개</a> &nbsp;·&nbsp; 돌과 시간 · 여정 프로토타입</span></div>
+<div id="hud"><span id="region">숲기슭</span><span><button id="mute" style="background:none;border:1px solid #444;border-radius:99px;color:#d8d5ce;padding:4px 12px;cursor:pointer;font-size:13px;">🔊</button>&nbsp; <a href="index.html" style="color:#b9b6af;text-decoration:none;">← 이야기</a> <a href="world.html" style="color:#b9b6af;text-decoration:none;">· 도감</a> &nbsp;·&nbsp; 돌과 시간 · 여정 프로토타입</span></div>
 <audio id="bgmA" src="assets/bgm_act1.mp3" loop preload="auto"></audio>
 <audio id="bgmB" src="assets/bgm_act2.mp3" loop preload="auto"></audio>
 <div id="msg">→ 방향키로 걷기 · 스페이스/↑ 점프 (모바일: 좌우 홀드 / 짧은 탭 점프)</div>
@@ -51,7 +51,7 @@
 const WORLD = 9000, SPEED = 0.6;   // 걷기 거리, 스트립 패럴랙스 배속
 const $ = id => document.getElementById(id);
 // 실제 배경이 들어간 구간만 표기 (BANDS와 동일 경계)
-function regionName(p){ return p<0.22 ? '숲기슭' : p<0.45 ? '암벽지대' : p<0.85 ? '깊은 숲' : '중심지'; }
+function regionName(p){ return p<0.22 ? '숲기슭' : p<0.45 ? '암벽지대' : p<0.85 ? '개발지 폐허' : '중심지'; }
 const BANDS = [ {k:'edge',a:0,b:.22}, {k:'cliff',a:.22,b:.45}, {k:'forest',a:.45,b:.85}, {k:'core',a:.85,b:1} ];
 const SRC = {
   gray : { edge:'assets/bg01_edge.jpg', cliff:'assets/bg03_cliff.jpg', forest:'assets/bg_forest.jpg', core:'assets/bg10_core.jpg' },
