@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>돌과 시간 — 이야기의 뼈대</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a0a0c; color:#e9e4d8; font-family:'Noto Serif KR', serif; }
+  a { color:#bdb8a9; }
+
+  header { padding:12vh 24px 7vh; text-align:center; }
+  header .sub { font-size:13px; letter-spacing:.35em; color:#8a857a; margin-bottom:18px; }
+  header h1 { font-size:clamp(34px,6vw,58px); font-weight:600; letter-spacing:.06em; }
+  header p { max-width:34em; margin:26px auto 0; line-height:2.1; color:#c9c4b6; font-size:15.5px; }
+
+  .note { max-width:46em; margin:0 auto; padding:14px 20px; border:1px solid #3d3226; border-radius:6px; font-size:13px; color:#a89a80; line-height:1.9; text-align:center; }
+
+  section { max-width:860px; margin:0 auto; padding:7vh 24px; }
+  section h2 { font-size:clamp(22px,3.4vw,30px); font-weight:600; margin-bottom:8px; }
+  section .cap { color:#8a857a; font-size:14px; margin-bottom:38px; }
+
+  /* 타임라인 */
+  .tl { position:relative; padding-left:34px; }
+  .tl::before { content:''; position:absolute; left:9px; top:6px; bottom:6px; width:1px; background:linear-gradient(#3a3a41, #3d5c49); }
+  .beat { position:relative; padding:0 0 46px; }
+  .beat::before { content:''; position:absolute; left:-31px; top:7px; width:11px; height:11px; border-radius:50%; background:#0a0a0c; border:2px solid #6b675e; }
+  .beat.color::before { border-color:#6ee7a0; }
+  .beat .tag { font-size:12px; letter-spacing:.2em; color:#7a766c; margin-bottom:6px; }
+  .beat h3 { font-size:19px; margin-bottom:10px; }
+  .beat p { font-size:14.5px; line-height:2.05; color:#b9b4a6; max-width:38em; }
+  .beat .opt { display:inline-block; margin-left:8px; font-size:11px; letter-spacing:.12em; padding:2px 9px; border:1px solid #3a3a41; border-radius:999px; color:#8a857a; vertical-align:2px; }
+
+  /* 데모 표 */
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th, td { padding:12px 14px; text-align:left; border-bottom:1px solid #1e1e24; line-height:1.8; }
+  th { color:#8a857a; font-weight:400; font-size:12.5px; letter-spacing:.12em; }
+  td:first-child { color:#8a857a; white-space:nowrap; }
+  td { color:#c2bdaf; }
+
+  footer { padding:52px 24px 60px; text-align:center; font-size:12.5px; color:#565349; line-height:2.2; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="sub">돌과 시간 · 이야기의 뼈대</div>
+  <h1>걸어가고, 되돌아오는 이야기</h1>
+  <p>대의도 사명도 없는 조약돌 하나가 숲의 중심까지 걸어 들어갔다가, 색이 돌아온 같은 길을 되돌아 나옵니다.
+     가는 길과 오는 길은 같은 길이지만, 같은 길이 아닙니다.</p>
+</header>
+
+<div class="note">팀 내부 참고용 — 이 페이지는 결말과 진엔딩까지 <strong>전체 스포일러</strong>를 포함합니다.<br>
+유저 공개용 소개는 <a href="index.html">이야기</a> 페이지를 써 주세요.</div>
+
+<section>
+  <h2>여정의 구조</h2>
+  <div class="cap">진행 깊이 1 → 10 → 1. 실제 맵은 메트로배니아식으로 얽혀 있습니다.</div>
+  <div class="tl">
+
+    <div class="beat">
+      <div class="tag">프롤로그</div>
+      <h3>첫 움직임</h3>
+      <p>비 갠 아침, 웅덩이 옆 돌무더기가 이유 없이 일어납니다. 지나가던 목각인형의 태엽 걸음을 따라 걷는 것이 튜토리얼의 전부 — 대사도, 목표 UI도 없습니다.</p>
+    </div>
+
+    <div class="beat">
+      <div class="tag">1막</div>
+      <h3>무목적의 여행 — 입구에서 중심으로</h3>
+      <p>눈앞의 문 하나, 몬스터 하나, 재질 하나. 골렘은 대의 없이 눈앞의 문제를 풀며 나아가고, 그 과정에서 인류의 잔재, 자연발생한 것, 움직이는 식물들을 차례로 마주치며 세계를 몸으로 배웁니다. 지역 보스를 잡을 때마다 그 일대에만 옅은 채도가 스며듭니다 — 완전한 색은 아직 아닙니다.</p>
+    </div>
+
+    <div class="beat color">
+      <div class="tag">클라이맥스</div>
+      <h3>격변 — 색이 돌아오는 순간</h3>
+      <p>중심지의 수집체를 멈추는 순간, 억눌려 있던 생명력이 터져 나와 숲 전체가 한꺼번에 색과 소리와 마음을 되찾습니다. 조용한 치유가 아니라 격변 — 축제이자 소요입니다. 이 게임 최고의 한 방이며, 크레딧은 여기서 나오지 않습니다.</p>
+    </div>
+
+    <div class="beat color">
+      <div class="tag">2막</div>
+      <h3>회귀 여행 — 같은 길이, 다르게 보인다</h3>
+      <p>되돌아가는 길. 골렘에게 인지와 감정이 생겼고 세계에 색이 생겨, 처음엔 못 봤던 것들이 보이기 시작합니다. 덤비던 식물 중 멈춰 서서 바라보는 개체가 하나둘 생기고, 색으로만 구분되는 퍼즐이 열리고, 첫 목각인형과 재회합니다 — 이 세계 최초의 '서로 봄'.</p>
+    </div>
+
+    <div class="beat color">
+      <div class="tag">이후</div>
+      <h3>자유 탐험 <span class="opt">상시</span></h3>
+      <p>각성한 것들로 붐비기 시작한 세계. 돌 마을이 허브가 되고, 격변의 혼란으로 새로 열린 미답 지역이 탐험을 기다립니다.</p>
+    </div>
+
+    <div class="beat color">
+      <div class="tag">사이드</div>
+      <h3>대탈출 <span class="opt">선택</span></h3>
+      <p>미답 지역의 가장 깊은 곳에서 무언가를 건드리면, 파괴 기계가 방금 돌아온 생명력을 마시고 되살아납니다. 절대 이길 수 없는 상대 — 게임의 문법 전체가 전투에서 도주로 반전되는 구간입니다. 회복이 재앙을 깨운다는 아이러니.</p>
+    </div>
+
+    <div class="beat color">
+      <div class="tag">진엔딩</div>
+      <h3>이름 없는 이들 <span class="opt">단서 12종</span></h3>
+      <p>숲 곳곳의 파편 — 수확 도식, 키재기 금, 그릇 일곱에 의자 여섯 — 을 모으면 돌 마을 뒤편의 공방이 열립니다. 깎다 만 목각인형과, 골렘을 마주 보는 완성된 인형들. 인류가 무엇을 했고 어떻게 살았는지만 전하고, 왜 사라졌는가는 끝까지 침묵합니다. 크레딧은 진엔딩의 전유물입니다.</p>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <h2>데모 (10~20분)</h2>
+  <div class="cap">여정 전체의 미니어처 — 데모의 피날레가 곧 격변입니다.</div>
+  <table>
+    <tr><th>순서</th><th>내용</th><th>분</th></tr>
+    <tr><td>숲기슭</td><td>깨어남, 목각인형 따라 걷기 튜토리얼</td><td>2~3</td></tr>
+    <tr><td>암벽지대</td><td>기본 전투와 재질 상성 → 보스 1: 암벽의 큰 골렘</td><td>4~6</td></tr>
+    <tr><td>심근 지대</td><td>압축 스펙업 후 수직 점프맵 — 적 없음, 침묵</td><td>3~4</td></tr>
+    <tr><td>중심지</td><td>보스 2: 수집체 맛보기 (축소판)</td><td>3~4</td></tr>
+    <tr><td>피날레</td><td>격변 — 색의 파도, 타이틀 카드, 종료</td><td>1~2</td></tr>
+  </table>
+</section>
+
+<footer>
+  <a href="index.html">이야기</a> · <a href="world.html">세계 도감</a> · <a href="play.html">직접 걸어보기</a><br>
+  돌과 시간 · Stone &amp; Time — 모든 내용은 개발 중 사양입니다
+</footer>
+
+</body>
+</html>
